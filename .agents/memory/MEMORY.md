@@ -1,0 +1,3 @@
+- [Orval generated hook queryKey requirement](frontend-orval-querykey.md) — Generated React Query hooks require `queryKey` inside the `query` option object; omitting it causes `TS2741`.
+- [Tailwind v4 CSS font loading](tailwind-v4-font-loading.md) — Loading Google Fonts via `@import url()` in the same CSS file as `@plugin`/`@theme` produces a PostCSS warning; use a `<link>` tag in `index.html` instead.
+- [Rupa marketplace overview](rupa-overview.md) — Bilingual marketplace for Bangladeshi women; custom JWT auth, seeded categories, DB-persisted cart, single-seller orders in v1.
