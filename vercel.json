@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/rupa run build && pnpm --filter @workspace/api-server run build:serverless",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "artifacts/rupa/dist/public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
+  ]
+}
