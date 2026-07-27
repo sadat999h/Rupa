@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Rupa — Women's Marketplace"
+version = "1.0.0"
+id = "artifacts/rupa"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22808
+
+[services.development]
+run = "pnpm --filter @workspace/rupa run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rupa", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rupa/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22808"
+BASE_PATH = "/"
