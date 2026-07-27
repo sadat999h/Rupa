@@ -1,9 +1,9 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/rupa run build && pnpm --filter @workspace/api-server run build:serverless",
-  "outputDirectory": "packages/rupa/dist/public",
+  "outputDirectory": "artifacts/rupa/dist/public",
   "functions": {
-    "packages/api-server/dist/serverless.mjs": {
+    "artifacts/api-server/dist/serverless.mjs": {
       "runtime": "nodejs20.x",
       "maxDuration": 30
     }
@@ -11,7 +11,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/packages/api-server/dist/serverless.mjs"
+      "destination": "/artifacts/api-server/dist/serverless.mjs"
     },
     {
       "source": "/((?!api).*)",
