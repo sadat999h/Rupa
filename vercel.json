@@ -4,7 +4,6 @@
   "outputDirectory": "artifacts/rupa/dist/public",
   "functions": {
     "artifacts/api-server/dist/serverless.mjs": {
-      "runtime": "nodejs20.x",
       "maxDuration": 30
     }
   },
