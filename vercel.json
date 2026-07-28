@@ -3,14 +3,14 @@
   "buildCommand": "pnpm --filter @workspace/rupa run build && pnpm --filter @workspace/api-server run build:serverless",
   "outputDirectory": "artifacts/rupa/dist/public",
   "functions": {
-    "artifacts/api-server/dist/serverless.mjs": {
+    "api/index.ts": {
       "maxDuration": 30
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/artifacts/api-server/dist/serverless.mjs"
+      "destination": "/api"
     },
     {
       "source": "/((?!api).*)",
