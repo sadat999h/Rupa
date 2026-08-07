@@ -107,6 +107,8 @@ export interface Product {
   /** @nullable */
   avgRating?: number | null;
   reviewCount: number;
+  /** @nullable */
+  kitchenId?: number | null;
   createdAt: string;
 }
 
@@ -145,6 +147,8 @@ export interface ProductDetail {
   /** @nullable */
   avgRating?: number | null;
   reviewCount: number;
+  /** @nullable */
+  kitchenId?: number | null;
   reviews: Review[];
   createdAt: string;
 }
@@ -165,6 +169,8 @@ export interface ProductInput {
   categorySlug: string;
   images: string[];
   stock: number;
+  /** @nullable */
+  kitchenId?: number | null;
 }
 
 export interface ProductUpdate {
@@ -177,6 +183,73 @@ export interface ProductUpdate {
   images?: string[];
   stock?: number;
   isActive?: boolean;
+  /** @nullable */
+  kitchenId?: number | null;
+}
+
+export interface Kitchen {
+  id: number;
+  ownerId: number;
+  ownerName: string;
+  /** @nullable */
+  ownerAvatar?: string | null;
+  name: string;
+  /** @nullable */
+  nameBn?: string | null;
+  description: string;
+  /** @nullable */
+  cuisineType?: string | null;
+  /** @nullable */
+  coverImage?: string | null;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  isOpen: boolean;
+  foodItemCount: number;
+  createdAt: string;
+}
+
+export type KitchenDetail = Kitchen & {
+  foodItems: Product[];
+};
+
+export interface KitchenListResponse {
+  kitchens: Kitchen[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface KitchenInput {
+  name: string;
+  /** @nullable */
+  nameBn?: string | null;
+  description: string;
+  /** @nullable */
+  cuisineType?: string | null;
+  /** @nullable */
+  coverImage?: string | null;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  phone?: string | null;
+}
+
+export interface KitchenUpdate {
+  name?: string;
+  /** @nullable */
+  nameBn?: string | null;
+  description?: string;
+  /** @nullable */
+  cuisineType?: string | null;
+  /** @nullable */
+  coverImage?: string | null;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  isOpen?: boolean;
 }
 
 export interface ReviewInput {
@@ -383,6 +456,12 @@ search?: string;
 minPrice?: number;
 maxPrice?: number;
 sellerId?: number;
+page?: number;
+limit?: number;
+};
+
+export type GetKitchensParams = {
+search?: string;
 page?: number;
 limit?: number;
 };

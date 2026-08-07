@@ -26,11 +26,17 @@ import type {
   Category,
   DashboardStats,
   ErrorResponse,
+  GetKitchensParams,
   GetOrdersParams,
   GetProductsParams,
   GetRecipesParams,
   GetSellersParams,
   HealthStatus,
+  Kitchen,
+  KitchenDetail,
+  KitchenInput,
+  KitchenListResponse,
+  KitchenUpdate,
   LoginInput,
   MarketplaceSummary,
   Order,
@@ -1200,6 +1206,387 @@ export const useCreateReview = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateReviewMutationOptions(options));
+    }
+
+export const getGetKitchensUrl = (params?: GetKitchensParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/kitchens?${stringifiedParams}` : `/api/kitchens`
+}
+
+/**
+ * @summary List home kitchens with optional search
+ */
+export const getKitchens = async (params?: GetKitchensParams, options?: RequestInit): Promise<KitchenListResponse> => {
+
+  return customFetch<KitchenListResponse>(getGetKitchensUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetKitchensQueryKey = (params?: GetKitchensParams,) => {
+    return [
+    `/api/kitchens`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetKitchensQueryOptions = <TData = Awaited<ReturnType<typeof getKitchens>>, TError = ErrorType<unknown>>(params?: GetKitchensParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKitchens>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetKitchensQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getKitchens>>> = ({ signal }) => getKitchens(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getKitchens>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetKitchensQueryResult = NonNullable<Awaited<ReturnType<typeof getKitchens>>>
+export type GetKitchensQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List home kitchens with optional search
+ */
+
+export function useGetKitchens<TData = Awaited<ReturnType<typeof getKitchens>>, TError = ErrorType<unknown>>(
+ params?: GetKitchensParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKitchens>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetKitchensQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateKitchenUrl = () => {
+
+
+
+
+  return `/api/kitchens`
+}
+
+/**
+ * @summary Create the current seller's kitchen profile
+ */
+export const createKitchen = async (kitchenInput: KitchenInput, options?: RequestInit): Promise<Kitchen> => {
+
+  return customFetch<Kitchen>(getCreateKitchenUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(kitchenInput)
+  }
+);}
+
+
+
+
+
+export const getCreateKitchenMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createKitchen>>, TError,{data: BodyType<KitchenInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createKitchen>>, TError,{data: BodyType<KitchenInput>}, TContext> => {
+
+const mutationKey = ['createKitchen'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createKitchen>>, {data: BodyType<KitchenInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createKitchen(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateKitchenMutationResult = NonNullable<Awaited<ReturnType<typeof createKitchen>>>
+    export type CreateKitchenMutationBody = BodyType<KitchenInput>
+    export type CreateKitchenMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create the current seller's kitchen profile
+ */
+export const useCreateKitchen = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createKitchen>>, TError,{data: BodyType<KitchenInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createKitchen>>,
+        TError,
+        {data: BodyType<KitchenInput>},
+        TContext
+      > => {
+      return useMutation(getCreateKitchenMutationOptions(options));
+    }
+
+export const getGetMyKitchenUrl = () => {
+
+
+
+
+  return `/api/kitchens/mine`
+}
+
+/**
+ * @summary Get the current seller's own kitchen profile
+ */
+export const getMyKitchen = async ( options?: RequestInit): Promise<KitchenDetail> => {
+
+  return customFetch<KitchenDetail>(getGetMyKitchenUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyKitchenQueryKey = () => {
+    return [
+    `/api/kitchens/mine`
+    ] as const;
+    }
+
+
+export const getGetMyKitchenQueryOptions = <TData = Awaited<ReturnType<typeof getMyKitchen>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyKitchen>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyKitchenQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyKitchen>>> = ({ signal }) => getMyKitchen({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyKitchen>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyKitchenQueryResult = NonNullable<Awaited<ReturnType<typeof getMyKitchen>>>
+export type GetMyKitchenQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get the current seller's own kitchen profile
+ */
+
+export function useGetMyKitchen<TData = Awaited<ReturnType<typeof getMyKitchen>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyKitchen>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyKitchenQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetKitchenUrl = (id: number,) => {
+
+
+
+
+  return `/api/kitchens/${id}`
+}
+
+/**
+ * @summary Get kitchen details with its food menu
+ */
+export const getKitchen = async (id: number, options?: RequestInit): Promise<KitchenDetail> => {
+
+  return customFetch<KitchenDetail>(getGetKitchenUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetKitchenQueryKey = (id: number,) => {
+    return [
+    `/api/kitchens/${id}`
+    ] as const;
+    }
+
+
+export const getGetKitchenQueryOptions = <TData = Awaited<ReturnType<typeof getKitchen>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKitchen>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetKitchenQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getKitchen>>> = ({ signal }) => getKitchen(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getKitchen>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetKitchenQueryResult = NonNullable<Awaited<ReturnType<typeof getKitchen>>>
+export type GetKitchenQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get kitchen details with its food menu
+ */
+
+export function useGetKitchen<TData = Awaited<ReturnType<typeof getKitchen>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getKitchen>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetKitchenQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateKitchenUrl = (id: number,) => {
+
+
+
+
+  return `/api/kitchens/${id}`
+}
+
+/**
+ * @summary Update a kitchen profile
+ */
+export const updateKitchen = async (id: number,
+    kitchenUpdate: KitchenUpdate, options?: RequestInit): Promise<Kitchen> => {
+
+  return customFetch<Kitchen>(getUpdateKitchenUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(kitchenUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateKitchenMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateKitchen>>, TError,{id: number;data: BodyType<KitchenUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateKitchen>>, TError,{id: number;data: BodyType<KitchenUpdate>}, TContext> => {
+
+const mutationKey = ['updateKitchen'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateKitchen>>, {id: number;data: BodyType<KitchenUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateKitchen(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateKitchenMutationResult = NonNullable<Awaited<ReturnType<typeof updateKitchen>>>
+    export type UpdateKitchenMutationBody = BodyType<KitchenUpdate>
+    export type UpdateKitchenMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a kitchen profile
+ */
+export const useUpdateKitchen = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateKitchen>>, TError,{id: number;data: BodyType<KitchenUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateKitchen>>,
+        TError,
+        {id: number;data: BodyType<KitchenUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateKitchenMutationOptions(options));
     }
 
 export const getGetRecipesUrl = (params?: GetRecipesParams,) => {
