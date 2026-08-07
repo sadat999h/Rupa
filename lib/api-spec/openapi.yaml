@@ -345,6 +345,117 @@ paths:
               schema:
                 $ref: "#/components/schemas/Review"
 
+  # Kitchens
+  /kitchens:
+    get:
+      operationId: getKitchens
+      tags: [kitchens]
+      summary: List home kitchens with optional search
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated kitchen list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KitchenListResponse"
+    post:
+      operationId: createKitchen
+      tags: [kitchens]
+      summary: Create the current seller's kitchen profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KitchenInput"
+      responses:
+        "201":
+          description: Kitchen created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kitchen"
+
+  /kitchens/mine:
+    get:
+      operationId: getMyKitchen
+      tags: [kitchens]
+      summary: Get the current seller's own kitchen profile
+      responses:
+        "200":
+          description: Kitchen details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KitchenDetail"
+        "404":
+          description: No kitchen yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /kitchens/{id}:
+    get:
+      operationId: getKitchen
+      tags: [kitchens]
+      summary: Get kitchen details with its food menu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Kitchen details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KitchenDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateKitchen
+      tags: [kitchens]
+      summary: Update a kitchen profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KitchenUpdate"
+      responses:
+        "200":
+          description: Updated kitchen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kitchen"
+
   # Recipes
   /recipes:
     get:
@@ -830,6 +941,8 @@ components:
           type: ["number", "null"]
         reviewCount:
           type: integer
+        kitchenId:
+          type: ["integer", "null"]
         createdAt:
           type: string
       required:
@@ -887,6 +1000,8 @@ components:
           type: ["number", "null"]
         reviewCount:
           type: integer
+        kitchenId:
+          type: ["integer", "null"]
         reviews:
           type: array
           items:
@@ -948,6 +1063,8 @@ components:
             type: string
         stock:
           type: integer
+        kitchenId:
+          type: ["integer", "null"]
       required:
         - title
         - description
@@ -976,6 +1093,122 @@ components:
         stock:
           type: integer
         isActive:
+          type: boolean
+        kitchenId:
+          type: ["integer", "null"]
+
+    # Kitchen
+    Kitchen:
+      type: object
+      properties:
+        id:
+          type: integer
+        ownerId:
+          type: integer
+        ownerName:
+          type: string
+        ownerAvatar:
+          type: ["string", "null"]
+        name:
+          type: string
+        nameBn:
+          type: ["string", "null"]
+        description:
+          type: string
+        cuisineType:
+          type: ["string", "null"]
+        coverImage:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        isOpen:
+          type: boolean
+        foodItemCount:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - ownerId
+        - ownerName
+        - name
+        - description
+        - isOpen
+        - foodItemCount
+        - createdAt
+
+    KitchenDetail:
+      allOf:
+        - $ref: "#/components/schemas/Kitchen"
+        - type: object
+          properties:
+            foodItems:
+              type: array
+              items:
+                $ref: "#/components/schemas/Product"
+          required:
+            - foodItems
+
+    KitchenListResponse:
+      type: object
+      properties:
+        kitchens:
+          type: array
+          items:
+            $ref: "#/components/schemas/Kitchen"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required:
+        - kitchens
+        - total
+        - page
+        - limit
+
+    KitchenInput:
+      type: object
+      properties:
+        name:
+          type: string
+        nameBn:
+          type: ["string", "null"]
+        description:
+          type: string
+        cuisineType:
+          type: ["string", "null"]
+        coverImage:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+      required:
+        - name
+        - description
+
+    KitchenUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        nameBn:
+          type: ["string", "null"]
+        description:
+          type: string
+        cuisineType:
+          type: ["string", "null"]
+        coverImage:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        isOpen:
           type: boolean
 
     # Review
