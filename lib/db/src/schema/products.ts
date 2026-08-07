@@ -3,6 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
 import { categoriesTable } from "./categories";
+import { kitchensTable } from "./kitchens";
 
 export const productsTable = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -19,6 +20,7 @@ export const productsTable = pgTable("products", {
     .references(() => usersTable.id),
   stock: integer("stock").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
+  kitchenId: integer("kitchen_id").references(() => kitchensTable.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
