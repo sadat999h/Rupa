@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, productsTable, usersTable, categoriesTable, reviewsTable } from "@workspace/db";
+import { db, productsTable, usersTable, categoriesTable, reviewsTable, kitchensTable } from "@workspace/db";
 import { eq, and, gte, lte, ilike, desc, inArray, avg, count, sql } from "drizzle-orm";
 import { requireAuth, optionalAuth } from "../middlewares/auth";
 import {
@@ -58,6 +58,7 @@ function formatProduct(
     isActive: product.isActive,
     avgRating: stats.avgRating,
     reviewCount: stats.reviewCount,
+    kitchenId: product.kitchenId ?? null,
     createdAt: product.createdAt.toISOString(),
   };
 }
@@ -235,7 +236,19 @@ router.post("/products", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  const { title, titleBn, description, price, categorySlug, images, stock } = parsed.data;
+  const { title, titleBn, description, price, categorySlug, images, stock, kitchenId } = parsed.data;
+
+  if (kitchenId != null) {
+    const [kitchen] = await db.select().from(kitchensTable).where(eq(kitchensTable.id, kitchenId)).limit(1);
+    if (!kitchen) {
+      res.status(400).json({ error: "Kitchen not found" });
+      return;
+    }
+    if (kitchen.ownerId !== req.user!.userId) {
+      res.status(403).json({ error: "You do not own this kitchen" });
+      return;
+    }
+  }
 
   const [product] = await db
     .insert(productsTable)
@@ -248,6 +261,7 @@ router.post("/products", requireAuth, async (req, res): Promise<void> => {
       images: images ?? [],
       sellerId: req.user!.userId,
       stock,
+      kitchenId: kitchenId ?? null,
     })
     .returning();
 
@@ -297,6 +311,7 @@ router.put("/products/:id", requireAuth, async (req, res): Promise<void> => {
   if (parsed.data.images !== undefined) updateData.images = parsed.data.images;
   if (parsed.data.stock !== undefined) updateData.stock = parsed.data.stock;
   if (parsed.data.isActive !== undefined) updateData.isActive = parsed.data.isActive;
+  if (parsed.data.kitchenId !== undefined) updateData.kitchenId = parsed.data.kitchenId;
 
   await db.update(productsTable).set(updateData).where(eq(productsTable.id, id));
 
