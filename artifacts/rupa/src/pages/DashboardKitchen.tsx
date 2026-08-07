@@ -39,17 +39,8 @@ export default function DashboardKitchen() {
   const [itemStock, setItemStock] = useState("10");
   const [itemImage, setItemImage] = useState("");
 
-  if (!user) {
-    setLocation("/login");
-    return null;
-  }
-  if (user.role !== "seller") {
-    setLocation("/");
-    return null;
-  }
-
   const { data: kitchen, isLoading } = useGetMyKitchen({
-    query: { queryKey: getGetMyKitchenQueryKey(), enabled: !!user, retry: false },
+    query: { queryKey: getGetMyKitchenQueryKey(), enabled: !!user && user.role === "seller", retry: false },
   });
 
   const createKitchen = useCreateKitchen({
@@ -85,6 +76,15 @@ export default function DashboardKitchen() {
       onError: (err: any) => toast({ title: "Error", description: err.error || "Failed to add dish.", variant: "destructive" }),
     },
   });
+
+  if (!user) {
+    setLocation("/login");
+    return null;
+  }
+  if (user.role !== "seller") {
+    setLocation("/");
+    return null;
+  }
 
   const handleCreateKitchen = (e: React.FormEvent) => {
     e.preventDefault();
