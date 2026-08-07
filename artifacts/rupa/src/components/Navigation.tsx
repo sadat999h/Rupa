@@ -24,6 +24,7 @@ export function Navigation() {
           
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/products" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Bazaar</Link>
+            <Link href="/food" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Food</Link>
             <Link href="/recipes" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Recipes</Link>
             <Link href="/sellers" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Artisans</Link>
           </nav>
@@ -94,6 +95,7 @@ export function Navigation() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => setLocation("/products")}>Bazaar</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation("/food")}>Food</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation("/recipes")}>Recipes</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation("/sellers")}>Artisans</DropdownMenuItem>
                 {!isAuthenticated && (
