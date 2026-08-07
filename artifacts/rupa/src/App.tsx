@@ -13,6 +13,8 @@ import { Footer } from '@/components/Footer';
 import Home from '@/pages/Home';
 import Products from '@/pages/Products';
 import ProductDetail from '@/pages/ProductDetail';
+import Food from '@/pages/Food';
+import KitchenDetail from '@/pages/KitchenDetail';
 import Recipes from '@/pages/Recipes';
 import RecipeDetail from '@/pages/RecipeDetail';
 import Sellers from '@/pages/Sellers';
@@ -25,6 +27,7 @@ import Dashboard from '@/pages/Dashboard';
 import DashboardProducts from '@/pages/DashboardProducts';
 import DashboardAddProduct from '@/pages/DashboardAddProduct';
 import DashboardAddRecipe from '@/pages/DashboardAddRecipe';
+import DashboardKitchen from '@/pages/DashboardKitchen';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 
@@ -49,6 +52,9 @@ function AppContent() {
           
           <Route path="/products" component={Products} />
           <Route path="/products/:id" component={ProductDetail} />
+
+          <Route path="/food" component={Food} />
+          <Route path="/food/:id" component={KitchenDetail} />
           
           <Route path="/recipes" component={Recipes} />
           <Route path="/recipes/:id" component={RecipeDetail} />
@@ -66,6 +72,7 @@ function AppContent() {
           <Route path="/dashboard/products" component={DashboardProducts} />
           <Route path="/dashboard/add-product" component={DashboardAddProduct} />
           <Route path="/dashboard/add-recipe" component={DashboardAddRecipe} />
+          <Route path="/dashboard/kitchen" component={DashboardKitchen} />
           
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
