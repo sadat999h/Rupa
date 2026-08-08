@@ -103,6 +103,33 @@ export const GetMeResponse = zod.object({
 
 
 /**
+ * @summary Update current user's profile
+ */
+export const UpdateMeBody = zod.object({
+  "name": zod.string().optional(),
+  "nameBn": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "avatar": zod.string().nullish(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish()
+})
+
+export const UpdateMeResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "nameBn": zod.string().nullish(),
+  "email": zod.string(),
+  "phone": zod.string().nullish(),
+  "role": zod.enum(['buyer', 'seller']),
+  "avatar": zod.string().nullish(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "isVerified": zod.boolean(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary List all categories
  */
 export const GetCategoriesResponseItem = zod.object({
