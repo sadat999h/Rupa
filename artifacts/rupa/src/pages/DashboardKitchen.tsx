@@ -16,8 +16,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { EditProductDialog } from "@/components/EditProductDialog";
+import type { Product } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
-import { ChefHat, Plus, UtensilsCrossed } from "lucide-react";
+import { ChefHat, Plus, UtensilsCrossed, Edit } from "lucide-react";
 
 export default function DashboardKitchen() {
   const { user } = useAuth();
@@ -38,6 +41,10 @@ export default function DashboardKitchen() {
   const [itemPrice, setItemPrice] = useState("");
   const [itemStock, setItemStock] = useState("10");
   const [itemImage, setItemImage] = useState("");
+
+  const [editKitchenOpen, setEditKitchenOpen] = useState(false);
+  const [editingDish, setEditingDish] = useState<Product | null>(null);
+  const [editDishOpen, setEditDishOpen] = useState(false);
 
   const { data: kitchen, isLoading } = useGetMyKitchen({
     query: { queryKey: getGetMyKitchenQueryKey(), enabled: !!user && user.role === "seller", retry: false },
@@ -108,6 +115,42 @@ export default function DashboardKitchen() {
   const handleToggleOpen = (isOpen: boolean) => {
     if (!kitchen) return;
     updateKitchen.mutate({ id: kitchen.id, data: { isOpen } });
+  };
+
+  const openEditKitchen = () => {
+    if (!kitchen) return;
+    setName(kitchen.name);
+    setNameBn(kitchen.nameBn ?? "");
+    setDescription(kitchen.description);
+    setCuisineType(kitchen.cuisineType ?? "");
+    setLocationField(kitchen.location ?? "");
+    setPhone(kitchen.phone ?? "");
+    setCoverImage(kitchen.coverImage ?? "");
+    setEditKitchenOpen(true);
+  };
+
+  const handleEditKitchenSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!kitchen) return;
+    if (!name.trim() || !description.trim()) {
+      toast({ title: "Missing info", description: "Kitchen name and description are required.", variant: "destructive" });
+      return;
+    }
+    updateKitchen.mutate(
+      {
+        id: kitchen.id,
+        data: {
+          name,
+          nameBn: nameBn || null,
+          description,
+          cuisineType: cuisineType || null,
+          coverImage: coverImage || null,
+          location: location || null,
+          phone: phone || null,
+        },
+      },
+      { onSuccess: () => setEditKitchenOpen(false) }
+    );
   };
 
   const handleAddItem = (e: React.FormEvent) => {
@@ -215,6 +258,9 @@ export default function DashboardKitchen() {
         <Button asChild variant="outline" className="rounded-full">
           <Link href={`/food/${kitchen.id}`}>View Public Page</Link>
         </Button>
+        <Button variant="outline" className="rounded-full" onClick={openEditKitchen}>
+          <Edit className="mr-2 h-4 w-4" /> Edit Kitchen Profile
+        </Button>
       </div>
 
       <Card className="rounded-2xl border-border/50 mb-10">
@@ -272,11 +318,80 @@ export default function DashboardKitchen() {
                   <p className="text-sm text-muted-foreground">৳{item.price.toLocaleString()} · Stock: {item.stock}</p>
                 </div>
                 <Badge variant={item.isActive ? "secondary" : "outline"}>{item.isActive ? "Active" : "Inactive"}</Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full shrink-0"
+                  onClick={() => {
+                    setEditingDish(item);
+                    setEditDishOpen(true);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </CardContent>
             </Card>
           ))
         )}
       </div>
+
+      <Dialog open={editKitchenOpen} onOpenChange={setEditKitchenOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Edit Kitchen Profile</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditKitchenSubmit} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Kitchen Name *</label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Kitchen Name (Bengali)</label>
+              <Input value={nameBn} onChange={(e) => setNameBn(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Description *</label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Cuisine Type</label>
+                <Input value={cuisineType} onChange={(e) => setCuisineType(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Location</label>
+                <Input value={location} onChange={(e) => setLocationField(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Phone</label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Cover Image URL</label>
+                <Input value={coverImage} onChange={(e) => setCoverImage(e.target.value)} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditKitchenOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateKitchen.isPending}>
+                {updateKitchen.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <EditProductDialog
+        product={editingDish}
+        open={editDishOpen}
+        onOpenChange={setEditDishOpen}
+        invalidateQueryKey={getGetMyKitchenQueryKey()}
+        itemLabel="dish"
+      />
     </div>
   );
 }

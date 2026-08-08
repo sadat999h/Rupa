@@ -37,6 +37,9 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-3">
           <Button asChild variant="outline" className="rounded-full">
+            <Link href="/dashboard/profile">Edit Profile</Link>
+          </Button>
+          <Button asChild variant="outline" className="rounded-full">
             <Link href="/dashboard/kitchen">My Kitchen</Link>
           </Button>
           <Button asChild variant="outline" className="rounded-full">

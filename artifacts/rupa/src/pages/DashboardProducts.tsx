@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/auth";
 import { useGetProducts, useDeleteProduct, getGetProductsQueryKey } from "@workspace/api-client-react";
+import type { Product } from "@workspace/api-client-react";
+import { EditProductDialog } from "@/components/EditProductDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +28,16 @@ export default function DashboardProducts() {
 
   const { data: productsData, isLoading } = useGetProducts({ sellerId: user.id });
   const deleteProduct = useDeleteProduct();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+
+  // Food items belong to the seller's Kitchen page, not here — keep the two lists separate.
+  const craftProducts = productsData?.products.filter((p) => !p.kitchenId) ?? [];
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setEditOpen(true);
+  };
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this product?")) {
@@ -85,7 +97,7 @@ export default function DashboardProducts() {
                     <TableCell><Skeleton className="h-8 w-8 rounded-full ml-auto" /></TableCell>
                   </TableRow>
                 ))
-              ) : productsData?.products.length === 0 ? (
+              ) : craftProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
                     You haven't listed any products yet. 
@@ -95,7 +107,7 @@ export default function DashboardProducts() {
                   </TableCell>
                 </TableRow>
               ) : (
-                productsData?.products.map((product) => (
+                craftProducts.map((product) => (
                   <TableRow key={product.id} className="hover:bg-muted/30">
                     <TableCell>
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center shrink-0">
@@ -137,7 +149,7 @@ export default function DashboardProducts() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem disabled>
+                          <DropdownMenuItem onClick={() => handleEdit(product)}>
                             <Edit className="mr-2 h-4 w-4" /> Edit Details
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleDelete(product.id)} className="text-destructive focus:text-destructive">
@@ -153,6 +165,14 @@ export default function DashboardProducts() {
           </Table>
         </div>
       </Card>
+
+      <EditProductDialog
+        product={editingProduct}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        invalidateQueryKey={getGetProductsQueryKey({ sellerId: user.id })}
+        itemLabel="product"
+      />
     </div>
   );
 }

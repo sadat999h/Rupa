@@ -20,6 +20,9 @@ export default function SellerProfile() {
     { query: { queryKey: getGetProductsQueryKey({ sellerId: id }), enabled: !!id } }
   );
 
+  // Home Food items live on this seller's Kitchen page, not their Artisan shop.
+  const craftProducts = productsData?.products.filter((p) => !p.kitchenId) ?? [];
+
   if (isLoadingProfile) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -119,12 +122,12 @@ export default function SellerProfile() {
                   <Skeleton className="h-4 w-1/2" />
                 </div>
               ))
-            ) : productsData?.products.length === 0 ? (
+            ) : craftProducts.length === 0 ? (
               <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed border-border rounded-2xl">
                 This artisan hasn't added any products yet.
               </div>
             ) : (
-              productsData?.products.map((product) => (
+              craftProducts.map((product) => (
                 <Card key={product.id} className="overflow-hidden group hover:shadow-md transition-all border-border/50 bg-card flex flex-col h-full">
                   <Link href={`/products/${product.id}`} className="flex-1 flex flex-col">
                     <div className="relative aspect-[4/5] overflow-hidden bg-muted">
