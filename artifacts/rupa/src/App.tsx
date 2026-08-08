@@ -28,6 +28,7 @@ import DashboardProducts from '@/pages/DashboardProducts';
 import DashboardAddProduct from '@/pages/DashboardAddProduct';
 import DashboardAddRecipe from '@/pages/DashboardAddRecipe';
 import DashboardKitchen from '@/pages/DashboardKitchen';
+import DashboardProfile from '@/pages/DashboardProfile';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 
@@ -73,6 +74,7 @@ function AppContent() {
           <Route path="/dashboard/add-product" component={DashboardAddProduct} />
           <Route path="/dashboard/add-recipe" component={DashboardAddRecipe} />
           <Route path="/dashboard/kitchen" component={DashboardKitchen} />
+          <Route path="/dashboard/profile" component={DashboardProfile} />
           
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
