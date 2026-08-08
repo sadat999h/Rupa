@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, kitchensTable, usersTable, productsTable, categoriesTable, reviewsTable } from "@workspace/db";
-import { eq, and, or, ilike, desc, sql } from "drizzle-orm";
+import { eq, and, or, ilike, desc, sql, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { GetKitchensQueryParams, CreateKitchenBody, UpdateKitchenBody, UpdateKitchenParams } from "@workspace/api-zod";
 
@@ -34,7 +34,7 @@ async function getFoodItemCounts(kitchenIds: number[]) {
   const rows = await db
     .select({ kitchenId: productsTable.kitchenId, cnt: sql<number>`CAST(COUNT(*) AS INTEGER)` })
     .from(productsTable)
-    .where(and(sql`${productsTable.kitchenId} = ANY(${kitchenIds})`, eq(productsTable.isActive, true)))
+    .where(and(inArray(productsTable.kitchenId, kitchenIds), eq(productsTable.isActive, true)))
     .groupBy(productsTable.kitchenId);
   const map = new Map<number, number>();
   for (const r of rows) {
