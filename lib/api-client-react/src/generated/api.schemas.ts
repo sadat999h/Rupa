@@ -78,6 +78,20 @@ export interface AuthResponse {
   token: string;
 }
 
+export interface UpdateProfileBody {
+  name?: string;
+  /** @nullable */
+  nameBn?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  avatar?: string | null;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  bio?: string | null;
+}
+
 export interface Category {
   id: number;
   name: string;
