@@ -51,5 +51,6 @@ export * from './review';
 export * from './reviewInput';
 export * from './sellerProfile';
 export * from './successResponse';
+export * from './updateProfileBody';
 export * from './user';
 export * from './userRole';
