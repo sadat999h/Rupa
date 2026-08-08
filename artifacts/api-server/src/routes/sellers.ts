@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, usersTable, productsTable, ordersTable, reviewsTable } from "@workspace/db";
-import { eq, ilike, and, count, avg, desc, sql } from "drizzle-orm";
+import { eq, ilike, and, count, avg, desc, sql, isNull } from "drizzle-orm";
 import { GetSellersQueryParams, GetSellerProfileParams } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -10,7 +10,7 @@ async function buildSellerProfile(seller: typeof usersTable.$inferSelect) {
     db
       .select({ count: count(productsTable.id) })
       .from(productsTable)
-      .where(and(eq(productsTable.sellerId, seller.id), eq(productsTable.isActive, true))),
+      .where(and(eq(productsTable.sellerId, seller.id), eq(productsTable.isActive, true), isNull(productsTable.kitchenId))),
     db
       .select({ count: count(ordersTable.id) })
       .from(ordersTable)

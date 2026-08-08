@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, signToken } from "../middlewares/auth";
-import { RegisterBody, LoginBody } from "@workspace/api-zod";
+import { RegisterBody, LoginBody, UpdateMeBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
@@ -77,6 +77,37 @@ router.post("/auth/logout", (_req, res): void => {
 });
 
 router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
+  if (!user) {
+    res.status(401).json({ error: "User not found" });
+    return;
+  }
+  res.json(formatUser(user));
+});
+
+router.put("/auth/me", requireAuth, async (req, res): Promise<void> => {
+  const parsed = UpdateMeBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const updateData: Record<string, unknown> = {};
+  if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+  if (parsed.data.nameBn !== undefined) updateData.nameBn = parsed.data.nameBn;
+  if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
+  if (parsed.data.avatar !== undefined) updateData.avatar = parsed.data.avatar;
+  if (parsed.data.location !== undefined) updateData.location = parsed.data.location;
+  if (parsed.data.bio !== undefined) updateData.bio = parsed.data.bio;
+
+  if (Object.keys(updateData).length === 0) {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
+    res.json(formatUser(user!));
+    return;
+  }
+
+  await db.update(usersTable).set(updateData).where(eq(usersTable.id, req.user!.userId));
+
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
   if (!user) {
     res.status(401).json({ error: "User not found" });
