@@ -152,6 +152,7 @@ export const GetProductsQueryParams = zod.object({
   "minPrice": zod.coerce.number().optional(),
   "maxPrice": zod.coerce.number().optional(),
   "sellerId": zod.coerce.number().optional(),
+  "kitchenOnly": zod.coerce.boolean().optional().describe('If true, return only Home Food items (products with a kitchenId). If omitted\/false, Home Food items are excluded — they belong on the \/food marketplace, not the Bazaar.'),
   "page": zod.coerce.number().optional(),
   "limit": zod.coerce.number().optional()
 })
@@ -175,6 +176,7 @@ export const GetProductsResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 })),
   "total": zod.number(),
@@ -215,6 +217,7 @@ export const CreateProductResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -240,6 +243,7 @@ export const GetFeaturedProductsResponseItem = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const GetFeaturedProductsResponse = zod.array(GetFeaturedProductsResponseItem)
@@ -266,6 +270,7 @@ export const GetTrendingProductsResponseItem = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const GetTrendingProductsResponse = zod.array(GetTrendingProductsResponseItem)
@@ -297,6 +302,7 @@ export const GetProductResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "reviews": zod.array(zod.object({
   "id": zod.number(),
   "productId": zod.number(),
@@ -348,6 +354,7 @@ export const UpdateProductResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -513,6 +520,7 @@ export const GetMyKitchenResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 }))
 }))
@@ -559,6 +567,7 @@ export const GetKitchenResponse = zod.object({
   "avgRating": zod.number().nullish(),
   "reviewCount": zod.number(),
   "kitchenId": zod.number().nullish(),
+  "kitchenName": zod.string().nullish(),
   "createdAt": zod.string()
 }))
 }))
