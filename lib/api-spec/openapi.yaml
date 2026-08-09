@@ -195,6 +195,11 @@ paths:
           in: query
           schema:
             type: integer
+        - name: kitchenOnly
+          in: query
+          description: If true, return only Home Food items (products with a kitchenId). If omitted/false, Home Food items are excluded — they belong on the /food marketplace, not the Bazaar.
+          schema:
+            type: boolean
         - name: page
           in: query
           schema:
@@ -982,6 +987,8 @@ components:
           type: integer
         kitchenId:
           type: ["integer", "null"]
+        kitchenName:
+          type: ["string", "null"]
         createdAt:
           type: string
       required:
@@ -1041,6 +1048,8 @@ components:
           type: integer
         kitchenId:
           type: ["integer", "null"]
+        kitchenName:
+          type: ["string", "null"]
         reviews:
           type: array
           items:
