@@ -118,7 +118,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <Link href={`/products?category=${cat.slug}`}>
+                <Link href={cat.slug === "home-food" ? "/food" : `/products?category=${cat.slug}`}>
                   <div className="group relative h-80 rounded-2xl overflow-hidden cursor-pointer">
                     <img 
                       src={cat.image} 

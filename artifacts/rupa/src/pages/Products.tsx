@@ -22,6 +22,8 @@ export default function Products() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const { data: categories } = useGetCategories();
+  // Home Food has its own marketplace at /food — don't offer it as a Bazaar filter.
+  const bazaarCategories = categories?.filter((cat) => cat.slug !== "home-food") ?? [];
   const { data: productsData, isLoading } = useGetProducts({
     search: debouncedSearch || undefined,
     category: category || undefined,
@@ -77,7 +79,7 @@ export default function Products() {
                 >
                   All Categories
                 </button>
-                {categories?.map((cat) => (
+                {bazaarCategories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setCategory(cat.slug)}
