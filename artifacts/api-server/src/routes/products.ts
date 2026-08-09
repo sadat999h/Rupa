@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, productsTable, usersTable, categoriesTable, reviewsTable, kitchensTable } from "@workspace/db";
-import { eq, and, gte, lte, ilike, desc, inArray, avg, count, sql } from "drizzle-orm";
+import { eq, and, gte, lte, ilike, desc, inArray, avg, count, sql, isNull, isNotNull } from "drizzle-orm";
 import { requireAuth, optionalAuth } from "../middlewares/auth";
 import {
   GetProductsQueryParams,
@@ -39,7 +39,8 @@ function formatProduct(
   product: typeof productsTable.$inferSelect,
   seller: { name: string | null; avatar: string | null },
   category: { name: string | null; nameBn: string | null },
-  stats: { avgRating: number | null; reviewCount: number }
+  stats: { avgRating: number | null; reviewCount: number },
+  kitchen: { name: string | null } = { name: null }
 ) {
   return {
     id: product.id,
@@ -59,6 +60,7 @@ function formatProduct(
     avgRating: stats.avgRating,
     reviewCount: stats.reviewCount,
     kitchenId: product.kitchenId ?? null,
+    kitchenName: kitchen.name ?? null,
     createdAt: product.createdAt.toISOString(),
   };
 }
@@ -69,7 +71,8 @@ router.get("/products/featured", async (_req, res): Promise<void> => {
     .from(productsTable)
     .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
     .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
-    .where(eq(productsTable.isActive, true))
+    .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
+    .where(and(eq(productsTable.isActive, true), isNull(productsTable.kitchenId)))
     .orderBy(desc(productsTable.createdAt))
     .limit(8);
 
@@ -78,7 +81,13 @@ router.get("/products/featured", async (_req, res): Promise<void> => {
 
   res.json(
     products.map((r) =>
-      formatProduct(r.products, { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null }, { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null }, statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 })
+      formatProduct(
+        r.products,
+        { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null },
+        { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null },
+        statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 },
+        { name: r.kitchens?.name ?? null }
+      )
     )
   );
 });
@@ -104,14 +113,16 @@ router.get("/products/trending", async (_req, res): Promise<void> => {
       .from(productsTable)
       .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
       .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
-      .where(and(inArray(productsTable.id, trendingIds), eq(productsTable.isActive, true)));
+      .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
+      .where(and(inArray(productsTable.id, trendingIds), eq(productsTable.isActive, true), isNull(productsTable.kitchenId)));
   } else {
     products = await db
       .select()
       .from(productsTable)
       .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
       .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
-      .where(eq(productsTable.isActive, true))
+      .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
+      .where(and(eq(productsTable.isActive, true), isNull(productsTable.kitchenId)))
       .orderBy(desc(productsTable.createdAt))
       .limit(8);
   }
@@ -121,7 +132,13 @@ router.get("/products/trending", async (_req, res): Promise<void> => {
 
   res.json(
     products.map((r) =>
-      formatProduct(r.products, { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null }, { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null }, statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 })
+      formatProduct(
+        r.products,
+        { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null },
+        { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null },
+        statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 },
+        { name: r.kitchens?.name ?? null }
+      )
     )
   );
 });
@@ -133,7 +150,7 @@ router.get("/products", async (req, res): Promise<void> => {
     return;
   }
 
-  const { category, search, minPrice, maxPrice, sellerId, page = 1, limit = 12 } = params.data;
+  const { category, search, minPrice, maxPrice, sellerId, kitchenOnly, page = 1, limit = 12 } = params.data;
 
   const conditions = [eq(productsTable.isActive, true)];
   if (category) conditions.push(eq(productsTable.categorySlug, category));
@@ -141,6 +158,8 @@ router.get("/products", async (req, res): Promise<void> => {
   if (minPrice != null) conditions.push(gte(productsTable.price, String(minPrice)));
   if (maxPrice != null) conditions.push(lte(productsTable.price, String(maxPrice)));
   if (sellerId != null) conditions.push(eq(productsTable.sellerId, Number(sellerId)));
+  // Home Food items live on the /food marketplace, not the Bazaar — keep them separate by default.
+  conditions.push(kitchenOnly ? isNotNull(productsTable.kitchenId) : isNull(productsTable.kitchenId));
 
   const offset = (Number(page) - 1) * Number(limit);
 
@@ -150,6 +169,7 @@ router.get("/products", async (req, res): Promise<void> => {
       .from(productsTable)
       .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
       .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
+      .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
       .where(and(...conditions))
       .orderBy(desc(productsTable.createdAt))
       .limit(Number(limit))
@@ -165,7 +185,13 @@ router.get("/products", async (req, res): Promise<void> => {
 
   res.json({
     products: rows.map((r) =>
-      formatProduct(r.products, { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null }, { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null }, statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 })
+      formatProduct(
+        r.products,
+        { name: r.users?.name ?? null, avatar: r.users?.avatar ?? null },
+        { name: r.categories?.name ?? null, nameBn: r.categories?.nameBn ?? null },
+        statsMap.get(r.products.id) ?? { avgRating: null, reviewCount: 0 },
+        { name: r.kitchens?.name ?? null }
+      )
     ),
     total: Number(countResult[0]?.count) || 0,
     page: Number(page),
@@ -186,6 +212,7 @@ router.get("/products/:id", async (req, res): Promise<void> => {
     .from(productsTable)
     .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
     .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
+    .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
     .where(eq(productsTable.id, id))
     .limit(1);
 
@@ -206,7 +233,7 @@ router.get("/products/:id", async (req, res): Promise<void> => {
   ]);
 
   const stats = statsMap.get(id) ?? { avgRating: null, reviewCount: 0 };
-  const product = formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, stats);
+  const product = formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, stats, { name: row.kitchens?.name ?? null });
 
   res.json({
     ...product,
@@ -270,10 +297,11 @@ router.post("/products", requireAuth, async (req, res): Promise<void> => {
     .from(productsTable)
     .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
     .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
+    .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
     .where(eq(productsTable.id, product.id))
     .limit(1);
 
-  res.status(201).json(formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, { avgRating: null, reviewCount: 0 }));
+  res.status(201).json(formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, { avgRating: null, reviewCount: 0 }, { name: row.kitchens?.name ?? null }));
 });
 
 router.put("/products/:id", requireAuth, async (req, res): Promise<void> => {
@@ -320,11 +348,12 @@ router.put("/products/:id", requireAuth, async (req, res): Promise<void> => {
     .from(productsTable)
     .leftJoin(usersTable, eq(productsTable.sellerId, usersTable.id))
     .leftJoin(categoriesTable, eq(productsTable.categorySlug, categoriesTable.slug))
+    .leftJoin(kitchensTable, eq(productsTable.kitchenId, kitchensTable.id))
     .where(eq(productsTable.id, id))
     .limit(1);
 
   const statsMap = await getReviewStats([id]);
-  res.json(formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, statsMap.get(id) ?? { avgRating: null, reviewCount: 0 }));
+  res.json(formatProduct(row.products, { name: row.users?.name ?? null, avatar: row.users?.avatar ?? null }, { name: row.categories?.name ?? null, nameBn: row.categories?.nameBn ?? null }, statsMap.get(id) ?? { avgRating: null, reviewCount: 0 }, { name: row.kitchens?.name ?? null }));
 });
 
 router.delete("/products/:id", requireAuth, async (req, res): Promise<void> => {
