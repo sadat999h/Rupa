@@ -12,6 +12,10 @@ search?: string;
 minPrice?: number;
 maxPrice?: number;
 sellerId?: number;
+/**
+ * If true, return only Home Food items (products with a kitchenId). If omitted/false, Home Food items are excluded — they belong on the /food marketplace, not the Bazaar.
+ */
+kitchenOnly?: boolean;
 page?: number;
 limit?: number;
 };

@@ -28,5 +28,7 @@ export interface Product {
   reviewCount: number;
   /** @nullable */
   kitchenId?: number | null;
+  /** @nullable */
+  kitchenName?: string | null;
   createdAt: string;
 }

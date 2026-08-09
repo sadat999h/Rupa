@@ -31,6 +31,8 @@ export interface ProductDetail {
   reviewCount: number;
   /** @nullable */
   kitchenId?: number | null;
+  /** @nullable */
+  kitchenName?: string | null;
   reviews: Review[];
   createdAt: string;
 }
